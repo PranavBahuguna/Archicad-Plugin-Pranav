@@ -18,6 +18,7 @@ JsonExporterDialog::JsonExporterDialog() :
 
   FillElementTypeFilters();
   m_exportPathTextEdit.SetText("Enter file path...");
+  m_allPropertyCheckbox.Check();
 }
 
 JsonExporterDialog::~JsonExporterDialog()

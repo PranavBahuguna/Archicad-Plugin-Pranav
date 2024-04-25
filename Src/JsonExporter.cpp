@@ -65,30 +65,30 @@ void JsonExporter::ParseElementType(API_ElemTypeID elemType, const GS::Array<API
   for (const API_Guid& elemGuid : elemList)
   {
     json elemJson;
-    ParseJsonFromElement(elemGuid, propertyGuids, elemJson);
-
-    if (!elemJson.empty())
+    if (!ParseJsonFromElement(elemGuid, propertyGuids, elemJson))
     {
-      std::string layerName;
-      if (GetElementLayer(elemGuid, layerName))
-      {
-        m_json[layerName][elemTypeName] = elemJson;
-      }
-      else
-      {
-        m_json["UNKNOWN LAYER"][elemTypeName] = elemJson;
-      }
+      continue;
+    }
+
+    std::string layerName;
+    if (GetElementLayer(elemGuid, layerName))
+    {
+      m_json[layerName][elemTypeName] = elemJson;
+    }
+    else
+    {
+      m_json["UNKNOWN LAYER"][elemTypeName] = elemJson;
     }
   }
 }
 
-void JsonExporter::ParseJsonFromElement(const API_Guid& elemGuid, const GS::Array<API_Guid>& propertyGuids, json& elemJson)
+bool JsonExporter::ParseJsonFromElement(const API_Guid& elemGuid, const GS::Array<API_Guid>& propertyGuids, json& elemJson)
 {
   // Get properties for the element
   GS::Array<API_Property> properties;
-  if (ACAPI_Element_GetPropertyValuesByGuid(elemGuid, propertyGuids, properties) != NoError)
+  if (ACAPI_Element_GetPropertyValuesByGuid(elemGuid, propertyGuids, properties) != NoError || properties.IsEmpty())
   {
-    return;
+    return false;
   }
 
   std::string elemName = APIGuidToString(elemGuid).ToCStr();
@@ -101,6 +101,7 @@ void JsonExporter::ParseJsonFromElement(const API_Guid& elemGuid, const GS::Arra
   }
 
   elemJson[elemName] = propertyJson;
+  return true;
 }
 
 void JsonExporter::ParseJsonFromProperty(const API_Property& prop, json& propertyJson)

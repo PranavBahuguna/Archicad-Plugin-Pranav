@@ -13,7 +13,7 @@ public:
 private:
   void ParseElementType(API_ElemTypeID elemType, const GS::Array<API_Guid>& propertyDefinitionGuids);
   void GetPropertyGuids(const API_ElemType& elemType, const std::vector<API_PropertyDefinitionFilter>& filters, GS::Array<API_Guid>& filterGuids);
-  void ParseJsonFromElement(const API_Guid& elemGuid, const GS::Array<API_Guid>& propertyDefinitionGuids, json& elemJson);
+  bool ParseJsonFromElement(const API_Guid& elemGuid, const GS::Array<API_Guid>& propertyDefinitionGuids, json& elemJson);
   void ParseJsonFromProperty(const API_Property& prop, json& propertyJson);
   bool GetElementLayer(const API_Guid& elemGuid, std::string& layerName);
 
