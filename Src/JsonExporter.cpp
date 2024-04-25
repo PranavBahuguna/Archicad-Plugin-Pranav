@@ -13,6 +13,22 @@ void JsonExporter::Parse(const std::vector<API_ElemTypeID>& elemTypes, const std
   }
 }
 
+bool JsonExporter::Export(const std::string& filepath, size_t width) const
+{
+  // Open a file (overwrites existing one)
+  std::ofstream outFile(filepath, std::ofstream::trunc);
+  if (!outFile.is_open())
+  {
+    return false;
+  }
+
+  // Write json with given width
+  outFile << std::setw(width) << m_json << std::endl;
+  outFile.close();
+
+  return true;
+}
+
 void JsonExporter::GetPropertyGuids(const API_ElemType& elemType, const std::vector<API_PropertyDefinitionFilter>& filters, GS::Array<API_Guid>& propertyGuids)
 {
   // Get property definitions guids for the given element type and filters
@@ -46,14 +62,23 @@ void JsonExporter::ParseElementType(API_ElemTypeID elemType, const GS::Array<API
   }
 
   // Parse json for all properties of each element
-  json elemJson;
   for (const API_Guid& elemGuid : elemList)
   {
+    json elemJson;
     ParseJsonFromElement(elemGuid, propertyGuids, elemJson);
-  }
-  if (!elemJson.empty())
-  {
-    m_json[elemTypeName] = elemJson;
+
+    if (!elemJson.empty())
+    {
+      std::string layerName;
+      if (GetElementLayer(elemGuid, layerName))
+      {
+        m_json[layerName][elemTypeName] = elemJson;
+      }
+      else
+      {
+        m_json["UNKNOWN LAYER"][elemTypeName] = elemJson;
+      }
+    }
   }
 }
 
@@ -156,18 +181,37 @@ void JsonExporter::ParseJsonFromProperty(const API_Property& prop, json& propert
   }
 }
 
-bool JsonExporter::Export(const std::string& filepath, size_t width) const
+bool JsonExporter::GetElementLayer(const API_Guid& elemGuid, std::string& layerName)
 {
-  // Open a file (overwrites existing one)
-  std::ofstream outFile(filepath, std::ofstream::trunc);
-  if (!outFile.is_open())
+  GS::Array<API_PropertyDefinition> definitions;
+  if (ACAPI_Element_GetPropertyDefinitions(elemGuid, API_PropertyDefinitionFilter_FundamentalBuiltIn, definitions) != NoError)
   {
     return false;
   }
 
-  // Write json with given width
-  outFile << std::setw(width) << m_json << std::endl;
-  outFile.close();
+  // Search for layer name property definition
+  API_Guid layerNameGuid;
+  bool found = false;
+  for (const auto& definition : definitions)
+  {
+    if (definition.name == "Layer Name")
+    {
+      layerNameGuid = definition.guid;
+      found = true;
+    }
+  }
+  if (!found)
+  {
+    return false;
+  }
 
+  // Obtain layer name value
+  API_Property layerNameProperty;
+  if (ACAPI_Element_GetPropertyValue(elemGuid, layerNameGuid, layerNameProperty) != NoError)
+  {
+    return false;
+  }
+
+  layerName = layerNameProperty.value.singleVariant.variant.uniStringValue.ToCStr();
   return true;
 }
