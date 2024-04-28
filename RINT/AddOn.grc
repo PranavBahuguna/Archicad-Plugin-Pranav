@@ -10,25 +10,25 @@
 }
 
 'GDLG' ID_ADDON_DLG Modal     40   40  520  320 "Export to JSON" {
-/* [  1] */ Button				   245  280   90   23	 LargePlain  "OK"
-/* [  2] */ Button				   145  280   90   23	 LargePlain  "Cancel"
-/* [  3] */ MultiLineEdit     10  120  500  100  LargePlain  VScroll
-/* [  4] */ MultiLineEdit     10  240  500   20  LargePlain  VScroll
-/* [  5] */ CheckBox          10   10  230   23  LargePlain "User Defined Properties"
-/* [  6] */ CheckBox          10   35  230   23  LargePlain "Fundamental Builtin Properties"
-/* [  7] */ CheckBox          10   60  230   23  LargePlain "User Level Builtin Properties"
-/* [  8] */ CheckBox          10   85  230   23  LargePlain "All Properties"
-/* [  9] */ Separator			    10  270  500    2
+/* [  1] */ CheckBox          10   10  230   23  LargePlain "User Defined Properties"
+/* [  2] */ CheckBox          10   35  230   23  LargePlain "Fundamental Builtin Properties"
+/* [  3] */ CheckBox          10   60  230   23  LargePlain "User Level Builtin Properties"
+/* [  4] */ CheckBox          10   85  230   23  LargePlain "All Properties"
+/* [  5] */ MultiLineEdit     10  120  500  100  LargePlain  VScroll
+/* [  6] */ MultiLineEdit     10  240  500   20  LargePlain  VScroll
+/* [  7] */ Separator			    10  270  500    2
+/* [  8] */ Button				   245  280   90   23	 LargePlain  "OK"
+/* [  9] */ Button				   145  280   90   23	 LargePlain  "Cancel"
 }
 
 'DLGH' ID_ADDON_DLG DLG_Example {
-1	""		Button_0
-2	""		Button_1
-3 ""    MultiLineEdit_0
-4 ""    MultiLineEdit_1
-5 ""    CheckBox_1
-6 ""    CheckBox_2
-7 ""    CheckBox_3
-8 ""    CheckBox_4
-9	""		Separator_0
+1 ""    CheckBox_1
+2 ""    CheckBox_2
+3 ""    CheckBox_3
+4 ""    CheckBox_4
+5 ""    MultiLineEdit_0
+6 ""    MultiLineEdit_1
+7	""		Separator_0
+8	""		Button_0
+9	""		Button_1
 }

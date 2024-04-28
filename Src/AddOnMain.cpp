@@ -1,6 +1,6 @@
 #include "APIEnvir.h"
 
-#include "JsonExporterDialog.hpp"
+#include "JsonExportUtils.hpp"
 
 static const GSResID AddOnInfoID = ID_ADDON_INFO;
 static const Int32 AddOnNameID = 1;
@@ -15,11 +15,8 @@ static GSErrCode MenuCommandHandler(const API_MenuParams* menuParams)
   case AddOnMenuID:
     switch (menuParams->menuItemRef.itemIndex) {
     case AddOnCommandID:
-    {
-      JsonExporterDialog dialog;
-      dialog.Invoke();
-    }
-    break;
+      JsonExportUtils::OpenExportDialog();
+      break;
     }
     break;
   }
