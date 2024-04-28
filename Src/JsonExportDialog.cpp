@@ -1,20 +1,24 @@
 #include "JsonExportDialog.hpp"
+#include "JsonExportUtils.hpp"
 
-JsonExportDialog::JsonExportDialog(const GS::UniString& availableElementTypesText) :
+JsonExportDialog::JsonExportDialog(bool selectionAvailable) :
   DG::ModalDialog(ACAPI_GetOwnResModule(), ExampleDialogResourceId, ACAPI_GetOwnResModule()),
-  m_okButton(GetReference(), OKButtonId),
-  m_cancelButton(GetReference(), CancelButtonId),
-  m_elementTypesTextEdit(GetReference(), ElementTypesTextEditId),
-  m_filePathTextEdit(GetReference(), FilePathTextEditId),
+  m_useSelectionElementsCheckbox(GetReference(), UseSelectionElementsCheckboxId),
+  m_useAllElementsCheckbox(GetReference(), UseAllElementsCheckboxId),
+  m_separator1(GetReference(), Separator1_Id),
   m_userDefinedCheckbox(GetReference(), UserDefinedCheckboxId),
   m_fundamentalCheckbox(GetReference(), FundamentalCheckboxId),
   m_userLevelCheckbox(GetReference(), UserLevelCheckboxId),
   m_allPropertyCheckbox(GetReference(), AllPropertyCheckboxId),
-  m_separator(GetReference(), SeparatorId)
+  m_elementTypesTextEdit(GetReference(), ElementTypesTextEditId),
+  m_filePathTextEdit(GetReference(), FilePathTextEditId),
+  m_separator2(GetReference(), Separator2_Id),
+  m_cancelButton(GetReference(), CancelButtonId),
+  m_okButton(GetReference(), OKButtonId)
 {
   AttachToAllItems(*this);
   Attach(*this);
-  InitDialog(availableElementTypesText);
+  InitDialog(selectionAvailable);
 }
 
 JsonExportDialog::~JsonExportDialog()
@@ -33,16 +37,28 @@ JsonExportSettingsData JsonExportDialog::GetSettingsData() const
   };
 }
 
-void JsonExportDialog::InitDialog(const GS::UniString& availableElementTypesText)
+void JsonExportDialog::InitDialog(bool selectionAvailable)
 {
-  // Init property filter checkboxes
+  // Init element selection options
+  if (selectionAvailable)
+  {
+    m_useSelectionElementsCheckbox.Check();
+  }
+  else
+  {
+    m_useSelectionElementsCheckbox.Disable();
+    m_useAllElementsCheckbox.Disable();
+    m_useAllElementsCheckbox.Check();
+  }
+  UpdateAvailableElementTypes();
+
+  // Init property filter options
   m_userDefinedCheckbox.Disable();
   m_fundamentalCheckbox.Disable();
   m_userLevelCheckbox.Disable();
   m_allPropertyCheckbox.Check();
 
   // Init text edits
-  m_elementTypesTextEdit.SetText(availableElementTypesText);
   m_filePathTextEdit.SetText("Enter file path...");
 }
 
@@ -56,6 +72,27 @@ void JsonExportDialog::ButtonClicked(const DG::ButtonClickEvent& ev)
 
 void JsonExportDialog::CheckItemChanged(const DG::CheckItemChangeEvent& ev)
 {
+  // Handle selected elements checkboxes
+  if (ev.GetSource() == &m_useSelectionElementsCheckbox)
+  {
+    if (m_useSelectionElementsCheckbox.IsChecked())
+      m_useAllElementsCheckbox.Uncheck();
+    else
+      m_useAllElementsCheckbox.Check();
+
+    UpdateAvailableElementTypes();
+  }
+  if (ev.GetSource() == &m_useAllElementsCheckbox)
+  {
+    if (m_useAllElementsCheckbox.IsChecked())
+      m_useSelectionElementsCheckbox.Uncheck();
+    else
+      m_useSelectionElementsCheckbox.Check();
+
+    UpdateAvailableElementTypes();
+  }
+
+  // Handle property filter checkboxes
   if (ev.GetSource() == &m_allPropertyCheckbox)
   {
     if (m_allPropertyCheckbox.IsChecked())
@@ -74,6 +111,26 @@ void JsonExportDialog::CheckItemChanged(const DG::CheckItemChangeEvent& ev)
       m_userLevelCheckbox.Enable();
     }
   }
+}
+
+void JsonExportDialog::UpdateAvailableElementTypes()
+{
+  // Obtain list of available type names
+  GS::Array<GS::UniString> elemTypeNames;
+  if (m_useSelectionElementsCheckbox.IsChecked())
+    JsonExportUtils::details::GetElementTypeNamesFromSelection(elemTypeNames);
+  else
+    JsonExportUtils::details::GetAllElementTypeNames(elemTypeNames);
+
+  // Join names together in a comma-separated list and update the text edit
+  GS::UniString allElemTypeNames;
+  if (!elemTypeNames.IsEmpty())
+  {
+    allElemTypeNames = elemTypeNames.GetFirst();
+    for (auto it = elemTypeNames.Begin() + 1; it != elemTypeNames.End(); ++it)
+      allElemTypeNames += ", " + *it;
+  }
+  m_elementTypesTextEdit.SetText(allElemTypeNames);
 }
 
 GS::Array<API_PropertyDefinitionFilter> JsonExportDialog::GetPropertyDefinitionFilters() const

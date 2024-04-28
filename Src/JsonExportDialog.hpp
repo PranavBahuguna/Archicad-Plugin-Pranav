@@ -21,18 +21,21 @@ public:
   enum DialogResourceIds
   {
     ExampleDialogResourceId = ID_ADDON_DLG,
-    UserDefinedCheckboxId = 1,
-    FundamentalCheckboxId = 2,
-    UserLevelCheckboxId = 3,
-    AllPropertyCheckboxId = 4,
-    ElementTypesTextEditId = 5,
-    FilePathTextEditId = 6,
-    SeparatorId = 7,
-    OKButtonId = 8,
-    CancelButtonId = 9,
+    UseSelectionElementsCheckboxId = 1,
+    UseAllElementsCheckboxId = 2,
+    Separator1_Id = 3,
+    UserDefinedCheckboxId = 4,
+    FundamentalCheckboxId = 5,
+    UserLevelCheckboxId = 6,
+    AllPropertyCheckboxId = 7,
+    ElementTypesTextEditId = 8,
+    FilePathTextEditId = 9,
+    Separator2_Id = 10,
+    CancelButtonId = 11,
+    OKButtonId = 12,
   };
 
-  JsonExportDialog(const GS::UniString& availableElementTypesText);
+  JsonExportDialog(bool selectionAvailable);
   ~JsonExportDialog();
 
   JsonExportSettingsData GetSettingsData() const;
@@ -41,17 +44,21 @@ private:
   virtual void ButtonClicked(const DG::ButtonClickEvent& ev) override;
   virtual void CheckItemChanged(const DG::CheckItemChangeEvent& ev) override;
 
-  void InitDialog(const GS::UniString& availableElementTypesText);
+  void InitDialog(bool selectionAvailable);
+  void UpdateAvailableElementTypes();
 
   GS::Array<API_PropertyDefinitionFilter> GetPropertyDefinitionFilters() const;
 
+  DG::CheckBox m_useSelectionElementsCheckbox;
+  DG::CheckBox m_useAllElementsCheckbox;
+  DG::Separator m_separator1;
   DG::CheckBox m_userDefinedCheckbox;
   DG::CheckBox m_fundamentalCheckbox;
   DG::CheckBox m_userLevelCheckbox;
   DG::CheckBox m_allPropertyCheckbox;
   DG::MultiLineEdit m_elementTypesTextEdit;
   DG::MultiLineEdit m_filePathTextEdit;
-  DG::Separator	m_separator;
+  DG::Separator	m_separator2;
   DG::Button m_okButton;
   DG::Button m_cancelButton;
 };
