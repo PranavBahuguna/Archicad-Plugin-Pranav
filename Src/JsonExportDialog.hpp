@@ -8,6 +8,7 @@ struct JsonExportSettingsData {
   GS::UniString filePath;
   GS::Array<API_PropertyDefinitionFilter> propertyDefinitionFilters;
   GS::Array<GS::UniString> elemTypeNames;
+  bool selectedOnly;
 };
 
 class JsonExportDialog :

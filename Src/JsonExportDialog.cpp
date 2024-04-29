@@ -33,7 +33,8 @@ JsonExportSettingsData JsonExportDialog::GetSettingsData() const
   {
     m_filePathTextEdit.GetText(),
     GetPropertyDefinitionFilters(),
-    m_elementTypesTextEdit.GetText().Split(",")
+    m_elementTypesTextEdit.GetText().Split(","),
+    m_useSelectionElementsCheckbox.IsChecked()
   };
 }
 
@@ -117,10 +118,8 @@ void JsonExportDialog::UpdateAvailableElementTypes()
 {
   // Obtain list of available type names
   GS::Array<GS::UniString> elemTypeNames;
-  if (m_useSelectionElementsCheckbox.IsChecked())
-    JsonExportUtils::details::GetElementTypeNamesFromSelection(elemTypeNames);
-  else
-    JsonExportUtils::details::GetAllElementTypeNames(elemTypeNames);
+  bool selectedOnly = m_useSelectionElementsCheckbox.IsChecked();
+  JsonExportUtils::GetAvailableElementTypeNames(selectedOnly, elemTypeNames);
 
   // Join names together in a comma-separated list and update the text edit
   GS::UniString allElemTypeNames;

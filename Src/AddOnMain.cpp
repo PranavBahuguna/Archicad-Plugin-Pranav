@@ -15,7 +15,7 @@ static GSErrCode MenuCommandHandler(const API_MenuParams* menuParams)
   case AddOnMenuID:
     switch (menuParams->menuItemRef.itemIndex) {
     case AddOnCommandID:
-      JsonExportUtils::details::OpenExportDialog();
+      JsonExportUtils::OpenExportDialog();
       break;
     }
     break;

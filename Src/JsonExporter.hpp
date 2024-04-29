@@ -5,15 +5,35 @@
 
 using json = nlohmann::json;
 
+struct NewElementData {
+  API_Guid elemGuid;
+  API_ElemType elemType;
+  GS::UniString layerName;
+};
+
+struct ElementData {
+  API_Guid elemGuid;
+  GS::UniString layerName;
+};
+
+struct ElementsForTypeData {
+  API_ElemType elemType;
+  GS::Array<ElementData> elemDataList;
+  GS::Array<API_Guid> propertyGuids;
+};
+
+typedef std::unordered_map<API_ElemTypeID, GS::Array<API_Guid>> ElementTypePropertiesMap;
+
 class JsonExporter {
 public:
-  void Parse(const GS::Array<API_ElemTypeID>& elemTypes, const GS::Array<API_PropertyDefinitionFilter>& filters, json& resultJson) const;
-  bool Export(const json &exportJson, const std::string& filepath, size_t width = 2) const;
+  void Parse(const GS::Array<NewElementData>& elemDataList, const ElementTypePropertiesMap& elemTypePropertiesMap, json& resultJson) const;
+  void Parse(const GS::Array<ElementsForTypeData>& elemDataList, json& resultJson) const;
+  bool Export(const json& exportJson, const std::string& filepath, size_t width = 2) const;
 
 private:
-  void ParseElementType(API_ElemTypeID elemType, const GS::Array<API_Guid>& propertyDefinitionGuids, json& elemTypeJson) const;
-  bool ParseJsonFromElement(const API_Guid& elemGuid, const GS::Array<API_Guid>& propertyDefinitionGuids, json& elemJson) const;
+  void ParseElement(const NewElementData& elemData, const GS::Array<API_Guid>& propertyDefinitionGuids, json& elemJson) const;
+
+  void ParseElement(const ElementsForTypeData& elemData, json& elemJson) const;
+  bool ParseJsonFromElement(const API_Guid& elemGuid, const GS::Array<API_Guid>& propertyDefinitionGuids, json& elemPropertiesJson) const;
   void ParseJsonFromProperty(const API_Property& prop, json& propertyJson) const;
-  void GetPropertyGuids(const API_ElemType& elemType, const GS::Array<API_PropertyDefinitionFilter>& filters, GS::Array<API_Guid>& filterGuids) const;
-  bool GetElementLayer(const API_Guid& elemGuid, std::string& layerName) const;
 };

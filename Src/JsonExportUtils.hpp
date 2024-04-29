@@ -2,14 +2,17 @@
 
 #include "ACAPinc.h"
 #include "JsonExportDialog.hpp"
+#include "JsonExporter.hpp"
 
-namespace JsonExportUtils::details
+namespace JsonExportUtils
 {
-  void GetElementTypes(const GS::Array<GS::UniString>& elemTypeNames, GS::Array<API_ElemTypeID>& elemTypes);
+  void GetAvailableElementTypeNames(bool selectionOnly, GS::Array<GS::UniString>& elemTypeNames);
+  void GetElementTypesFromNames(const GS::Array<GS::UniString>& elemTypeNames, GS::Array<API_ElemType>& elemTypes);
   bool IsAnyElementsSelected();
   void GetSelectedElements(GS::Array<API_Guid>& elemGuids);
-  void GetAllElementTypeNames(GS::Array<GS::UniString>& elemTypes);
-  void GetElementTypeNamesFromSelection(GS::Array<GS::UniString> &elemTypes);
+  void GetElementsFromTypes(const GS::Array<API_ElemType>& elemTypes, GS::Array<API_Guid>& elemGuids);
+  void BuildElementData(const GS::Array<API_Guid>& elemGuids, GS::Array<NewElementData>& data);
+  void BuildElementTypePropertiesMap(const GS::Array<API_ElemType>& elemTypes, const GS::Array<API_PropertyDefinitionFilter>& filters, ElementTypePropertiesMap& elemTypePropertiesMap);
   void StartExport(const JsonExportSettingsData& data);
   void OpenExportDialog();
 };
