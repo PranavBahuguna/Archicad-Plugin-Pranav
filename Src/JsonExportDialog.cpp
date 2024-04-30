@@ -1,7 +1,7 @@
 #include "JsonExportDialog.hpp"
 #include "JsonExportUtils.hpp"
 
-JsonExportDialog::JsonExportDialog(bool selectionAvailable) :
+JsonExportDialog::JsonExportDialog() :
   DG::ModalDialog(ACAPI_GetOwnResModule(), ExampleDialogResourceId, ACAPI_GetOwnResModule()),
   m_useSelectionElementsCheckbox(GetReference(), UseSelectionElementsCheckboxId),
   m_useAllElementsCheckbox(GetReference(), UseAllElementsCheckboxId),
@@ -18,7 +18,7 @@ JsonExportDialog::JsonExportDialog(bool selectionAvailable) :
 {
   AttachToAllItems(*this);
   Attach(*this);
-  InitDialog(selectionAvailable);
+  InitDialog();
 }
 
 JsonExportDialog::~JsonExportDialog()
@@ -27,21 +27,33 @@ JsonExportDialog::~JsonExportDialog()
   DetachFromAllItems(*this);
 }
 
+/**
+ * @brief Obtains settings data from this dialog
+ * @returns Settings data, this consists of:
+ * - Output file path string
+ * - Array of property definition filters
+ * - Array of element type names
+ * - Using element selection bool value check
+ */
 JsonExportSettingsData JsonExportDialog::GetSettingsData() const
 {
+  auto elementNames = m_elementTypesTextEdit.GetText().Split(",");
+  for (GS::UniString &name : elementNames)
+    name.Trim();
+
   return JsonExportSettingsData
   {
     m_filePathTextEdit.GetText(),
     GetPropertyDefinitionFilters(),
-    m_elementTypesTextEdit.GetText().Split(","),
+    elementNames,
     m_useSelectionElementsCheckbox.IsChecked()
   };
 }
 
-void JsonExportDialog::InitDialog(bool selectionAvailable)
+void JsonExportDialog::InitDialog()
 {
   // Init element selection options
-  if (selectionAvailable)
+  if (JsonExportUtils::IsAnyElementsSelected())
   {
     m_useSelectionElementsCheckbox.Check();
   }
@@ -54,8 +66,11 @@ void JsonExportDialog::InitDialog(bool selectionAvailable)
   UpdateAvailableElementTypes();
 
   // Init property filter options
+  m_userDefinedCheckbox.Check();
   m_userDefinedCheckbox.Disable();
+  m_fundamentalCheckbox.Check();
   m_fundamentalCheckbox.Disable();
+  m_userLevelCheckbox.Check();
   m_userLevelCheckbox.Disable();
   m_allPropertyCheckbox.Check();
 

@@ -36,7 +36,7 @@ public:
     OKButtonId = 12,
   };
 
-  JsonExportDialog(bool selectionAvailable);
+  JsonExportDialog();
   ~JsonExportDialog();
 
   JsonExportSettingsData GetSettingsData() const;
@@ -45,7 +45,7 @@ private:
   virtual void ButtonClicked(const DG::ButtonClickEvent& ev) override;
   virtual void CheckItemChanged(const DG::CheckItemChangeEvent& ev) override;
 
-  void InitDialog(bool selectionAvailable);
+  void InitDialog();
   void UpdateAvailableElementTypes();
 
   GS::Array<API_PropertyDefinitionFilter> GetPropertyDefinitionFilters() const;

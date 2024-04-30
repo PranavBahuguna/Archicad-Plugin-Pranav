@@ -9,19 +9,19 @@
 /* [  1] */		"Export to JSON ^E3 ^ES ^EE ^EI ^ED ^ET ^10001"
 }
 
-'GDLG' ID_ADDON_DLG Modal     40   40  520  380 "Export to JSON" {
-/* [  1] */ CheckBox          10   10  230   23  LargePlain "Export elements from selection"
-/* [  2] */ CheckBox          10   35  230   23  LargePlain "Export all elements in project"
-/* [  3] */ Separator         10   65  500    2
-/* [  3] */ CheckBox          10   70  230   23  LargePlain "User Defined Properties"
-/* [  4] */ CheckBox          10   95  230   23  LargePlain "Fundamental Builtin Properties"
-/* [  5] */ CheckBox          10  120  230   23  LargePlain "User Level Builtin Properties"
-/* [  6] */ CheckBox          10  145  230   23  LargePlain "All Properties"
-/* [  7] */ MultiLineEdit     10  180  500  100  LargePlain  VScroll
-/* [  8] */ MultiLineEdit     10  300  500   20  LargePlain  VScroll
-/* [  9] */ Separator			    10  330  500    2
-/* [ 10] */ Button				   145  340   90   23	 LargePlain  "Cancel"
-/* [ 11] */ Button				   245  340   90   23	 LargePlain  "OK"
+'GDLG' ID_ADDON_DLG Modal         40   40  520  380 "Export to JSON" {
+/* [  1] */ CheckBox              10   10  230   23  LargePlain "Export elements from selection"
+/* [  2] */ CheckBox              10   35  230   23  LargePlain "Export all elements in project"
+/* [  3] */ Separator             10   65  500    2
+/* [  3] */ CheckBox              10   70  230   23  LargePlain "User Defined Properties"
+/* [  4] */ CheckBox              10   95  230   23  LargePlain "Fundamental Builtin Properties"
+/* [  5] */ CheckBox              10  120  230   23  LargePlain "User Level Builtin Properties"
+/* [  6] */ CheckBox              10  145  230   23  LargePlain "All Properties"
+/* [  7] */ MultiLineEdit         10  180  500  100  LargePlain  VScroll
+/* [  8] */ MultiLineEdit         10  300  500   20  LargePlain  VScroll
+/* [  9] */ Separator			        10  330  500    2
+/* [ 10] */ Button				       145  340   90   23	 LargePlain  "Cancel"
+/* [ 11] */ Button				       245  340   90   23	 LargePlain  "OK"
 }
 
 'DLGH' ID_ADDON_DLG DLG_Example {
