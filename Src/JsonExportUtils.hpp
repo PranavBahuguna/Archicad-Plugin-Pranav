@@ -1,13 +1,16 @@
 #pragma once
 
-#include "JsonExportDialog.hpp"
 #include "ElementData.hpp"
+#include "JsonExportSettingsData.hpp"
+#include "Thirdparty/json.hpp"
+
+using json = nlohmann::json;
 
 class JsonExportUtils {
 public:
   JsonExportUtils() = delete; // prevent instantiation of this class
 
-  static void BuildData(const GS::Array<GS::UniString> elemTypeNames, const GS::Array<API_PropertyDefinitionFilter> propertyDefinitionFilters, bool selectedOnly, GS::Array<ElementData>& elemData);
+  static void RunExportProcess(const JsonExportSettingsData& settingsData);
   static void GetAvailableElementTypeNames(bool selectionOnly, GS::Array<GS::UniString>& elemTypeNames);
   static bool IsAnyElementsSelected();
 
@@ -18,4 +21,6 @@ private:
   static void FilterElementsByType(const GS::Array<API_ElemTypeID>& elemTypes, const GS::Array<API_Guid>& inputElemGuids, GS::Array<API_Guid>& outputGuids);
   static void GetSelectedElements(GS::Array<API_Guid>& elemGuids);
   static void GetElementTypesFromNames(const GS::Array<GS::UniString>& elemTypeNames, GS::Array<API_ElemTypeID>& elemTypes);
+  static void RunExportToFile(const GS::UniString& filePath, const json& exportJson);
+  static void RunExportToUrl(const GS::UniString& baseUrl, const json& exportJson);
 };

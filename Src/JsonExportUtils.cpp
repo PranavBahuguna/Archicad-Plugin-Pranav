@@ -1,24 +1,22 @@
 #include "JsonExportUtils.hpp"
+#include "JsonParser.hpp"
+#include "DataExporter.hpp"
+#include "DG.h"
 
-#include <algorithm>
+const static int JsonIndentWidth = 2;
 
 /**
- * @brief Constructs a list of element data from the application
- * @param[in] settingsData Settings for determining what data to extract from the current project
- * @param[out] elemData The output data for json parsing
+ * @brief Runs the process for collecting, parsing and exporting element data from the project
+ * @param[in] settingsData Settings for determining what element data to extract
  */
-void JsonExportUtils::BuildData(
-  const GS::Array<GS::UniString> elemTypeNames,
-  const GS::Array<API_PropertyDefinitionFilter> propertyDefinitionFilters,
-  bool selectedOnly,
-  GS::Array<ElementData> &elemData)
+void JsonExportUtils::RunExportProcess(const JsonExportSettingsData& settingsData)
 {
   // Obtain all element types and guids
   GS::Array<API_ElemTypeID> elemTypes;
-  GetElementTypesFromNames(elemTypeNames, elemTypes);
+  GetElementTypesFromNames(settingsData.elemTypeNames, elemTypes);
 
   GS::Array<API_Guid> elemGuids;
-  if (selectedOnly)
+  if (settingsData.selectedOnly)
   {
     GS::Array<API_Guid> selectedGuids;
     GetSelectedElements(selectedGuids);
@@ -30,7 +28,19 @@ void JsonExportUtils::BuildData(
   }
 
   // Construct data for parsing
-  BuildElementData(elemGuids, propertyDefinitionFilters, elemData);
+  GS::Array<ElementData> elemData;
+  BuildElementData(elemGuids, settingsData.propertyDefinitionFilters, elemData);
+
+  // Parse data to JSON
+  json exportJson;
+  JsonParser::Parse(elemData, exportJson);
+
+  // Export JSON to file and/or url
+  if (settingsData.exportToFile)
+    RunExportToFile(settingsData.filePath, exportJson);
+
+  if (settingsData.exportToUrl)
+    RunExportToUrl(settingsData.baseUrl, exportJson);
 }
 
 /**
@@ -194,5 +204,37 @@ void JsonExportUtils::GetElementTypesFromNames(const GS::Array<GS::UniString>& e
 
     if (elemTypeNames.Contains(elemName))
       elemTypes.Push(elemTypeId);
+  }
+}
+
+void JsonExportUtils::RunExportToFile(const GS::UniString& filePath, const json& exportJson)
+{
+  // Write to file and alert user to success or failure
+  std::string filePathStr = filePath.ToCStr();
+  std::string errorStr;
+  if (DataExporter::ExportToFile(exportJson, filePathStr, JsonIndentWidth, errorStr))
+  {
+    GS::UniString alertText = "Data sucessfully written to " + filePath;
+    DGAlert(DG_INFORMATION, "Export to File", "", alertText, "OK");
+  }
+  else
+  {
+    DGAlert(DG_ERROR, "Export to File", "", GS::UniString(errorStr), "OK");
+  }
+}
+
+void JsonExportUtils::RunExportToUrl(const GS::UniString& baseUrl, const json& exportJson)
+{
+  // Export to url and alert user to success or failure
+  std::string baseUrlStr = baseUrl.ToCStr();
+  std::string errorStr;
+  if (DataExporter::ExportToUrl(exportJson, baseUrlStr, JsonIndentWidth, errorStr))
+  {
+    GS::UniString alertText = "Data sucessfully exported to " + baseUrl;
+    DGAlert(DG_INFORMATION, "Export to URL", "", alertText, "OK");
+  }
+  else
+  {
+    DGAlert(DG_ERROR, "Export to URL", "", GS::UniString(errorStr), "OK");
   }
 }

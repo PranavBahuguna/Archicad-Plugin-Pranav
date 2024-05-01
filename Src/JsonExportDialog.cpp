@@ -1,9 +1,5 @@
 #include "JsonExportDialog.hpp"
 #include "JsonExportUtils.hpp"
-#include "JsonParser.hpp"
-#include "DataExporter.hpp"
-
-const static int JsonIndentWidth = 2;
 
 JsonExportDialog::JsonExportDialog() :
   DG::ModalDialog(ACAPI_GetOwnResModule(), ExampleDialogResourceId, ACAPI_GetOwnResModule()),
@@ -35,65 +31,13 @@ JsonExportDialog::~JsonExportDialog()
   DetachFromAllItems(*this);
 }
 
-/**
- * @brief Obtains settings data from this dialog
- * @returns Settings data, this consists of:
- * - Output file path string
- * - Array of property definition filters
- * - Array of element type names
- * - Using element selection bool value check
- */
-JsonExportSettingsData JsonExportDialog::GetSettingsData() const
-{
-  auto elementNames = m_elementTypesTextEdit.GetText().Split(",");
-  for (GS::UniString& name : elementNames)
-    name.Trim();
-
-  return JsonExportSettingsData
-  {
-    m_filePathTextEdit.GetText(),
-    m_urlTextEdit.GetText(),
-    m_filePathCheckBox.IsChecked(),
-    m_urlCheckBox.IsChecked(),
-    GetPropertyDefinitionFilters(),
-    elementNames,
-    m_useSelectionElementsCheckbox.IsChecked()
-  };
-}
-
-void JsonExportDialog::InitDialog()
-{
-  // Init element selection options
-  if (JsonExportUtils::IsAnyElementsSelected())
-  {
-    m_useSelectionElementsCheckbox.Check();
-  }
-  else
-  {
-    m_useSelectionElementsCheckbox.Disable();
-    m_useAllElementsCheckbox.Disable();
-    m_useAllElementsCheckbox.Check();
-  }
-  UpdateAvailableElementTypes();
-
-  // Init property filter options
-  m_userDefinedCheckbox.Check();
-  m_userDefinedCheckbox.Disable();
-  m_fundamentalCheckbox.Check();
-  m_fundamentalCheckbox.Disable();
-  m_userLevelCheckbox.Check();
-  m_userLevelCheckbox.Disable();
-  m_allPropertyCheckbox.Check();
-
-  // Init file path / link export options
-  m_filePathCheckBox.Check();
-  m_urlTextEdit.Disable();
-}
-
 void JsonExportDialog::ButtonClicked(const DG::ButtonClickEvent& ev)
 {
   if (ev.GetSource() == &m_exportButton)
-    PostCloseRequest(DG::ModalDialog::Accept);
+  {
+    auto settingsData = GetSettingsData();
+    JsonExportUtils::RunExportProcess(settingsData);
+  }
 
   if (ev.GetSource() == &m_closeButton)
     PostCloseRequest(DG::ModalDialog::Cancel);
@@ -172,6 +116,35 @@ void JsonExportDialog::CheckItemChanged(const DG::CheckItemChangeEvent& ev)
     m_exportButton.Enable();
 }
 
+void JsonExportDialog::InitDialog()
+{
+  // Init element selection options
+  if (JsonExportUtils::IsAnyElementsSelected())
+  {
+    m_useSelectionElementsCheckbox.Check();
+  }
+  else
+  {
+    m_useSelectionElementsCheckbox.Disable();
+    m_useAllElementsCheckbox.Disable();
+    m_useAllElementsCheckbox.Check();
+  }
+  UpdateAvailableElementTypes();
+
+  // Init property filter options
+  m_userDefinedCheckbox.Check();
+  m_userDefinedCheckbox.Disable();
+  m_fundamentalCheckbox.Check();
+  m_fundamentalCheckbox.Disable();
+  m_userLevelCheckbox.Check();
+  m_userLevelCheckbox.Disable();
+  m_allPropertyCheckbox.Check();
+
+  // Init file path / link export options
+  m_filePathCheckBox.Check();
+  m_urlTextEdit.Disable();
+}
+
 void JsonExportDialog::UpdateAvailableElementTypes()
 {
   // Obtain list of available type names
@@ -188,6 +161,24 @@ void JsonExportDialog::UpdateAvailableElementTypes()
       allElemTypeNames += ", " + *it;
   }
   m_elementTypesTextEdit.SetText(allElemTypeNames);
+}
+
+JsonExportSettingsData JsonExportDialog::GetSettingsData() const
+{
+  auto elementNames = m_elementTypesTextEdit.GetText().Split(",");
+  for (GS::UniString& name : elementNames)
+    name.Trim();
+
+  return JsonExportSettingsData
+  {
+    m_filePathTextEdit.GetText(),
+    m_urlTextEdit.GetText(),
+    m_filePathCheckBox.IsChecked(),
+    m_urlCheckBox.IsChecked(),
+    GetPropertyDefinitionFilters(),
+    elementNames,
+    m_useSelectionElementsCheckbox.IsChecked()
+  };
 }
 
 GS::Array<API_PropertyDefinitionFilter> JsonExportDialog::GetPropertyDefinitionFilters() const

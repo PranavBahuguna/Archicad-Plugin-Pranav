@@ -1,18 +1,9 @@
 #pragma once
 
-#include "ACAPinc.h"
+#include "JsonExportSettingsData.hpp"
+
 #include "ResourceIds.hpp"
 #include "DGModule.hpp"
-
-struct JsonExportSettingsData {
-  GS::UniString filePath;
-  GS::UniString baseUrl;
-  bool exportToFile;
-  bool exportToLink;
-  GS::Array<API_PropertyDefinitionFilter> propertyDefinitionFilters;
-  GS::Array<GS::UniString> elemTypeNames;
-  bool selectedOnly;
-};
 
 class JsonExportDialog :
   public DG::ModalDialog,
@@ -46,15 +37,14 @@ public:
   JsonExportDialog();
   ~JsonExportDialog();
 
-  JsonExportSettingsData GetSettingsData() const;
-
 private:
   virtual void ButtonClicked(const DG::ButtonClickEvent& ev) override;
   virtual void CheckItemChanged(const DG::CheckItemChangeEvent& ev) override;
 
   void InitDialog();
   void UpdateAvailableElementTypes();
-  
+
+  JsonExportSettingsData GetSettingsData() const;
   GS::Array<API_PropertyDefinitionFilter> GetPropertyDefinitionFilters() const;
 
   DG::CheckBox m_useSelectionElementsCheckbox;

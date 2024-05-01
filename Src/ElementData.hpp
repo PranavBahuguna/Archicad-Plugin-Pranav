@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ACAPinc.h"
+
 /**
  * @brief Defines the key info for a given element
  */
