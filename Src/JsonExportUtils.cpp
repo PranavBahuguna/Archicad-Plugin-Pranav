@@ -1,13 +1,36 @@
 #include "JsonExportUtils.hpp"
 
-/** @brief Initialises the export dialog window */
-void JsonExportUtils::OpenExportDialog()
+#include <algorithm>
+
+/**
+ * @brief Constructs a list of element data from the application
+ * @param[in] settingsData Settings for determining what data to extract from the current project
+ * @param[out] elemData The output data for json parsing
+ */
+void JsonExportUtils::BuildData(
+  const GS::Array<GS::UniString> elemTypeNames,
+  const GS::Array<API_PropertyDefinitionFilter> propertyDefinitionFilters,
+  bool selectedOnly,
+  GS::Array<ElementData> &elemData)
 {
-  JsonExportDialog jsonExportDialog;
-  if (jsonExportDialog.Invoke()) {
-    const auto& settingsData = jsonExportDialog.GetSettingsData();
-    StartExport(settingsData);
+  // Obtain all element types and guids
+  GS::Array<API_ElemTypeID> elemTypes;
+  GetElementTypesFromNames(elemTypeNames, elemTypes);
+
+  GS::Array<API_Guid> elemGuids;
+  if (selectedOnly)
+  {
+    GS::Array<API_Guid> selectedGuids;
+    GetSelectedElements(selectedGuids);
+    FilterElementsByType(elemTypes, selectedGuids, elemGuids);
   }
+  else
+  {
+    GetElementsFromTypes(elemTypes, elemGuids);
+  }
+
+  // Construct data for parsing
+  BuildElementData(elemGuids, propertyDefinitionFilters, elemData);
 }
 
 /**
@@ -53,43 +76,7 @@ bool JsonExportUtils::IsAnyElementsSelected()
   return error == NoError && selectionInfo.sel_nElem > 0;
 }
 
-
-void JsonExportUtils::StartExport(const JsonExportSettingsData& data)
-{
-  // Obtain all element types and guids
-  GS::Array<API_ElemTypeID> elemTypes;
-  GetElementTypesFromNames(data.elemTypeNames, elemTypes);
-
-  GS::Array<API_Guid> elemGuids;
-  if (data.selectedOnly)
-    GetSelectedElements(elemGuids);
-  else
-    GetElementsFromTypes(elemTypes, elemGuids);
-
-  // Construct data and properties map for parsing
-  GS::Array<ElementData> elemData;
-  BuildElementData(elemGuids, elemData);
-
-  ElementTypePropertiesMap elemTypePropertiesMap;
-  BuildElementTypePropertiesMap(elemTypes, data.propertyDefinitionFilters, elemTypePropertiesMap);
-
-  // Parse data and export json
-  json resultJson;
-  JsonExporter::Parse(elemData, elemTypePropertiesMap, resultJson);
-
-  if (data.exportToFile)
-  {
-    std::string filePath = data.filePath.ToCStr();
-    JsonExporter::ExportToFile(resultJson, filePath);
-  }
-  if (data.exportToLink)
-  {
-    std::string linkPath = data.linkPath.ToCStr();
-    JsonExporter::ExportToLink(resultJson, linkPath);
-  }
-}
-
-void JsonExportUtils::BuildElementData(const GS::Array<API_Guid>& elemGuids, GS::Array<ElementData>& data)
+void JsonExportUtils::BuildElementData(const GS::Array<API_Guid>& elemGuids, const GS::Array<API_PropertyDefinitionFilter>& filters, GS::Array<ElementData>& data)
 {
   for (const API_Guid& elemGuid : elemGuids)
   {
@@ -99,6 +86,11 @@ void JsonExportUtils::BuildElementData(const GS::Array<API_Guid>& elemGuids, GS:
     header.guid = elemGuid;
 
     if (ACAPI_Element_GetHeader(&header) != NoError)
+      continue;
+
+    // Get properies data
+    GS::Array<API_Property> properties;
+    if (!GetElementProperties(elemGuid, filters, properties))
       continue;
 
     // Get layer name
@@ -111,25 +103,25 @@ void JsonExportUtils::BuildElementData(const GS::Array<API_Guid>& elemGuids, GS:
     bool layerAttribFound = ACAPI_Attribute_Get(&attrib) == NoError;
     layerName = layerAttribFound ? attrib.header.name : "UNKNOWN LAYER";
 
-    data.PushNew(elemGuid, header.type.typeID, layerName);
+    data.PushNew(elemGuid, header.type.typeID, layerName, properties);
   }
 }
 
-void JsonExportUtils::BuildElementTypePropertiesMap(const GS::Array<API_ElemTypeID>& elemTypes, const GS::Array<API_PropertyDefinitionFilter>& filters, ElementTypePropertiesMap& elemTypePropertiesMap)
+bool JsonExportUtils::GetElementProperties(const API_Guid& elemGuid, const GS::Array<API_PropertyDefinitionFilter>& filters, GS::Array<API_Property>& properties)
 {
-  // Get property definitions guids for the given element type and filters
-  for (API_ElemTypeID elemTypeId : elemTypes)
+  // Get all property definitions for the given element and filters
+  GS::Array<API_PropertyDefinition> propertyDefinitions;
+  for (API_PropertyDefinitionFilter filter : filters)
   {
-    for (API_PropertyDefinitionFilter filter : filters)
-    {
-      GS::Array<API_PropertyDefinition> propertyDefinitions;
-      if (ACAPI_Element_GetPropertyDefinitionsOfDefaultElem(elemTypeId, filter, propertyDefinitions) != NoError)
-        continue;
-
-      for (const auto& definition : propertyDefinitions)
-        elemTypePropertiesMap[elemTypeId].Push(definition.guid);
-    }
+    if (ACAPI_Element_GetPropertyDefinitions(elemGuid, filter, propertyDefinitions) != NoError)
+      continue;
   }
+
+  // Try obtaining property values from the given properties
+  if (ACAPI_Element_GetPropertyValues(elemGuid, propertyDefinitions, properties) != NoError || properties.IsEmpty())
+    return false;
+
+  return true;
 }
 
 void JsonExportUtils::GetElementsFromTypes(const GS::Array<API_ElemTypeID>& elemTypes, GS::Array<API_Guid>& elemGuids)
@@ -140,6 +132,24 @@ void JsonExportUtils::GetElementsFromTypes(const GS::Array<API_ElemTypeID>& elem
     GS::Array<API_Guid> elemTypeGuids;
     if (ACAPI_Element_GetElemList(elemTypeId, &elemGuids) == NoError)
       elemTypeGuids.Append(elemGuids);
+  }
+}
+
+void JsonExportUtils::FilterElementsByType(const GS::Array<API_ElemTypeID>& elemTypes, const GS::Array<API_Guid>& inputElemGuids, GS::Array<API_Guid>& outputGuids)
+{
+  for (const API_Guid& inputGuid : inputElemGuids)
+  {
+    // Get header data
+    API_Elem_Head header;
+    BNZeroMemory(&header, sizeof(API_Elem_Head));
+    header.guid = inputGuid;
+
+    if (ACAPI_Element_GetHeader(&header) != NoError)
+      continue;
+
+    // Add elements whose type is contained in the type filters
+    if (elemTypes.Contains(header.type.typeID))
+      outputGuids.Push(inputGuid);
   }
 }
 
@@ -155,11 +165,14 @@ void JsonExportUtils::GetSelectedElements(GS::Array<API_Guid>& elemGuids)
   for (const API_Neig& neig : selNeigs)
   {
     API_Guid elemGuid;
-    if (ACAPI_Selection_GetSelectedElement(&neig, &elemGuid) == NoError)
+    if (ACAPI_Selection_GetSelectedElement(&neig, &elemGuid) != NoError)
+      continue;
+
+    // Ignore duplicates
+    if (!elemGuids.Contains(elemGuid))
       elemGuids.Push(elemGuid);
   }
 }
-
 
 void JsonExportUtils::GetElementTypesFromNames(const GS::Array<GS::UniString>& elemTypeNames, GS::Array<API_ElemTypeID>& elemTypes)
 {

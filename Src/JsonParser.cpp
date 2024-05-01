@@ -1,79 +1,25 @@
-#include "JsonExporter.hpp"
-
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#include "httplib.h"
-
-#include <iostream>
-#include <fstream>
+#include "JsonParser.hpp"
 
 /**
  * @brief Transforms a collection of supplied element and properties data into json format
  * @param[in] elemDataList Array of element data to process
- * @param[in] elemTypePropertiesMap Map of element types to property definition guids
  * @param[out] resultJson The json structure to write to
  */
-void JsonExporter::Parse(const GS::Array<ElementData>& elemDataList, const ElementTypePropertiesMap& elemTypePropertiesMap, json& resultJson)
+void JsonParser::Parse(const GS::Array<ElementData>& elemDataList, json& resultJson)
 {
   for (const ElementData& elemData : elemDataList)
   {
-    auto typePropertiesIt = elemTypePropertiesMap.find(elemData.elemTypeId);
-    if (typePropertiesIt != elemTypePropertiesMap.end())
-      ParseElement(elemData, typePropertiesIt->second, resultJson);
+    if (!elemData.properties.IsEmpty())
+      ParseElement(elemData, resultJson);
   }
 }
 
-/**
- * @brief Writes a json structure to file. Constructs a new file if one does not already exist and will
- * overwrite existing ones.
- * @param[in] exportJson The json to write to file
- * @param[in] filePath The path of the file to write to
- * @param[in] width The indent width for json elements
- * @returns True if file could be sucessfully opened
- */
-bool JsonExporter::ExportToFile(const json& exportJson, const std::string& filePath, int width)
-{
-  // Open a file
-  std::ofstream outFile(filePath, std::ofstream::trunc);
-  if (!outFile.is_open())
-    return false;
-
-  // Write json with given width
-  outFile << std::setw(width) << exportJson << std::endl;
-  outFile.close();
-  return true;
-}
-
-/**
- * @brief Writes a json structure to a http link
- * @param[in] exportJson The json to write to file
- * @param[in] linkPath The link to send a POST message to
- * @param[in] width The indent width for json elements
- * @returns True if file could be sucessfully opened
- */
-bool JsonExporter::ExportToLink(const json& exportJson, const std::string& linkPath, int width)
-{
-  httplib::Client cli(linkPath);
-  httplib::Result result = cli.Post("/post", exportJson.dump(width), "application/json");
-
-  if (result->status != httplib::StatusCode::OK_200)
-  {
-    //std::cout << "HTTP error:" << httplib::to_string(result.error()) << std::endl;
-    return false;
-  }
-  else
-  {
-    //std::cout << result->body << std::endl;
-  }
-
-  return true;
-}
-
-void JsonExporter::ParseElement(const ElementData& elemData, const GS::Array<API_Guid>& propertyGuids, json& elemJson)
+void JsonParser::ParseElement(const ElementData& elemData, json& elemJson)
 {
   // Get element properties json
   json elemPropertiesJson;
-  if (!ParseJsonFromElement(elemData.elemGuid, propertyGuids, elemPropertiesJson))
-    return;
+  for (const API_Property& prop : elemData.properties)
+    ParseJsonFromProperty(prop, elemPropertiesJson);
 
   // Get element type name
   GS::UniString elemTypeNameUniStr;
@@ -87,21 +33,7 @@ void JsonExporter::ParseElement(const ElementData& elemData, const GS::Array<API
   elemJson[layerName][elemTypeName][elemName] = elemPropertiesJson;
 }
 
-bool JsonExporter::ParseJsonFromElement(const API_Guid& elemGuid, const GS::Array<API_Guid>& propertyGuids, json& elemPropertiesJson)
-{
-  // Get properties for the element
-  GS::Array<API_Property> properties;
-  if (ACAPI_Element_GetPropertyValuesByGuid(elemGuid, propertyGuids, properties) != NoError || properties.IsEmpty())
-    return false;
-
-  // Parse json for all element properties
-  for (const auto& prop : properties)
-    ParseJsonFromProperty(prop, elemPropertiesJson);
-
-  return true;
-}
-
-void JsonExporter::ParseJsonFromProperty(const API_Property& prop, json& propertyJson)
+void JsonParser::ParseJsonFromProperty(const API_Property& prop, json& propertyJson)
 {
   std::string name = prop.definition.name.ToCStr();
   bool isSingle =

@@ -21,11 +21,11 @@
 /* [  9] */ MultiLineEdit        100  180  410  100  LargePlain  VScroll
 /* [ 10] */ CheckBox              10  295   90   23  LargePlain "File Path"
 /* [ 11] */ MultiLineEdit        100  295  410   20  LargePlain  VScroll
-/* [ 12] */ CheckBox              10  330   90   23  LargePlain "Url"
+/* [ 12] */ CheckBox              10  330   90   23  LargePlain "Base Url"
 /* [ 13] */ MultiLineEdit        100  330  410   20  LargePlain  VScroll
 /* [ 14] */ Separator			        10  370  500    2
-/* [ 15] */ Button				       165  380   90   23	 LargePlain  "Cancel"
-/* [ 16] */ Button				       265  380   90   23	 LargePlain  "OK"
+/* [ 15] */ Button				       165  380   90   23	 LargePlain  "Close"
+/* [ 16] */ Button				       265  380   90   23	 LargePlain  "Export"
 }
 
 'DLGH' ID_ADDON_DLG DLG_Example {

@@ -1,5 +1,9 @@
 #include "JsonExportDialog.hpp"
 #include "JsonExportUtils.hpp"
+#include "JsonParser.hpp"
+#include "DataExporter.hpp"
+
+const static int JsonIndentWidth = 2;
 
 JsonExportDialog::JsonExportDialog() :
   DG::ModalDialog(ACAPI_GetOwnResModule(), ExampleDialogResourceId, ACAPI_GetOwnResModule()),
@@ -17,8 +21,8 @@ JsonExportDialog::JsonExportDialog() :
   m_urlCheckBox(GetReference(), UrlCheckboxId),
   m_urlTextEdit(GetReference(), UrlTextEditId),
   m_separator2(GetReference(), Separator2_Id),
-  m_cancelButton(GetReference(), CancelButtonId),
-  m_okButton(GetReference(), OKButtonId)
+  m_closeButton(GetReference(), CloseButtonId),
+  m_exportButton(GetReference(), ExportButtonId)
 {
   AttachToAllItems(*this);
   Attach(*this);
@@ -88,9 +92,10 @@ void JsonExportDialog::InitDialog()
 
 void JsonExportDialog::ButtonClicked(const DG::ButtonClickEvent& ev)
 {
-  if (ev.GetSource() == &m_okButton)
+  if (ev.GetSource() == &m_exportButton)
     PostCloseRequest(DG::ModalDialog::Accept);
-  if (ev.GetSource() == &m_cancelButton)
+
+  if (ev.GetSource() == &m_closeButton)
     PostCloseRequest(DG::ModalDialog::Cancel);
 }
 
@@ -152,10 +157,19 @@ void JsonExportDialog::CheckItemChanged(const DG::CheckItemChangeEvent& ev)
       m_urlTextEdit.Disable();
   }
 
-  if (m_filePathCheckBox.IsChecked() || m_urlCheckBox.IsChecked())
-    m_okButton.Enable();
+  // Disable export button if either no filters or file path and url are not checked
+  bool allFiltersUnchecked =
+    !m_userDefinedCheckbox.IsChecked() &&
+    !m_fundamentalCheckbox.IsChecked() &&
+    !m_userLevelCheckbox.IsChecked() &&
+    !m_allPropertyCheckbox.IsChecked();
+
+  bool allExportsUnchecked = !m_filePathCheckBox.IsChecked() && !m_urlCheckBox.IsChecked();
+
+  if (allFiltersUnchecked || allExportsUnchecked)
+    m_exportButton.Disable();
   else
-    m_okButton.Disable();
+    m_exportButton.Enable();
 }
 
 void JsonExportDialog::UpdateAvailableElementTypes()

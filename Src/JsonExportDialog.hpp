@@ -6,7 +6,7 @@
 
 struct JsonExportSettingsData {
   GS::UniString filePath;
-  GS::UniString linkPath;
+  GS::UniString baseUrl;
   bool exportToFile;
   bool exportToLink;
   GS::Array<API_PropertyDefinitionFilter> propertyDefinitionFilters;
@@ -39,8 +39,8 @@ public:
     UrlCheckboxId = 12,
     UrlTextEditId = 13,
     Separator2_Id = 14,
-    CancelButtonId = 15,
-    OKButtonId = 16
+    CloseButtonId = 15,
+    ExportButtonId = 16
   };
 
   JsonExportDialog();
@@ -54,7 +54,7 @@ private:
 
   void InitDialog();
   void UpdateAvailableElementTypes();
-
+  
   GS::Array<API_PropertyDefinitionFilter> GetPropertyDefinitionFilters() const;
 
   DG::CheckBox m_useSelectionElementsCheckbox;
@@ -71,6 +71,6 @@ private:
   DG::CheckBox m_urlCheckBox;
   DG::MultiLineEdit m_urlTextEdit;
   DG::Separator	m_separator2;
-  DG::Button m_okButton;
-  DG::Button m_cancelButton;
+  DG::Button m_exportButton;
+  DG::Button m_closeButton;
 };
