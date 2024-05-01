@@ -12,8 +12,19 @@ Additionally for Visual Studio, ensure you have the correct platform toolset ins
 - Archicad 23 - 24: Platform toolset v141
 - Archicad 25 - 27: Platform toolset v142
 
-Note: This plugin was built using the [Archicad addon template](https://github.com/GRAPHISOFT/archicad-addon-cmake). While the template can build for both
+Note 1: This plugin was built using the [Archicad addon template](https://github.com/GRAPHISOFT/archicad-addon-cmake). While the template can build for both
 Windows and Mac OS, the plugin in its current state only builds for Windows at the moment, so please use Windows for building this.
+
+Note 2: This project also makes use of [cpp-httplib](https://github.com/yhirose/cpp-httplib) library for HTTP/HTTPS functions. By default, the project
+currently only allows HTTP requests to be sent. To send HTTPS requests, you need to do the following:
+- Install OpenSSL (version 3+). I was able to do this with [vcpkg](https://github.com/microsoft/vcpkg) like so:
+  ```
+  .\vcpkg install openssl[core,tools]
+  .\vcpkg integrate install
+  ```
+- Navigate to [Src/DataExporter.cpp](https://github.com/PranavBahuguna/Archicad-Plugin-Pranav/blob/master/Src/DataExporter.cpp) and uncomment the line `#define CPPHTTPLIB_OPENSSL_SUPPORT`
+
+If these steps for installing OpenSSL don't work for you, then keep the above line commented as it may cause compilation errors due to not finding the required headers.  
 
 ## Setup
 
@@ -48,11 +59,20 @@ The plugin is available via Options -> Export to JSON.
 ## Plugin operation
 
 There are several options provided in the plugin:
+- Checkboxes for using selection vs using all elements. If no elements are selected in Archicad, then it will default to the latter option. If
+  a selection is made (e.g. selecting elements with the arrow tool), it gives the option of parsing data for that selection only, or obtaining
+  data from all project elements instead.
 - Checkboxes for property definition filters. These limit the property types that will be collected and exported for each element, and multiple
-  types can be selected. If all properties checkbox is checked or none of them are, then all property types will be included.
-- Text box containing comma-separated values of all available element types. You can limit the element types available by removing unwanted
-  element types.
-- Text box requesting a file path. Enter a file path (e.g. `C:\Users\Username\Output.json`) to provide a location to output JSON data.
+  types can be selected. If all properties checkbox is checked, then all property types will be included.
+- Text box containing comma-separated values of all available element types. This automatically updates based on whether a selection or all
+  elements are selected. You can limit the elements whose data is extracted by removing element types.
+- File path export option. Enter a file path (e.g. `C:\Users\Username\Output.json`) to provide a location to write JSON data to. Unchecking this
+  option will disable file exports.
+- Url path export option. Enter a base url (e.g. `http://httpbin.org`) to provide a location to upload JSON data to. Data will be sent via the
+  HTTP POST method, (so full endpoint would be `http://httpbin.org/post`). Unchecking this option will disable url exports.
+- Export button to run the export process for file, url or both. On completion, this will produce a dialog notifying the success or failure of
+  the export operations for file and url respectively. This button is disabled if no property definition filters are selected or both file and
+  url exports are disabled.
 
 The exported JSON will have this format:
 
