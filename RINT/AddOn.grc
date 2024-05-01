@@ -9,32 +9,40 @@
 /* [  1] */		"Export to JSON ^E3 ^ES ^EE ^EI ^ED ^ET ^10001"
 }
 
-'GDLG' ID_ADDON_DLG Modal         40   40  520  380 "Export to JSON" {
-/* [  1] */ CheckBox              10   10  230   23  LargePlain "Export elements from selection"
-/* [  2] */ CheckBox              10   35  230   23  LargePlain "Export all elements in project"
+'GDLG' ID_ADDON_DLG Modal         40   40  520  420 "Export to JSON" {
+/* [  1] */ CheckBox              10   10  500   23  LargePlain "Export elements from selection"
+/* [  2] */ CheckBox              10   35  500   23  LargePlain "Export all elements in project"
 /* [  3] */ Separator             10   65  500    2
-/* [  3] */ CheckBox              10   70  230   23  LargePlain "User Defined Properties"
-/* [  4] */ CheckBox              10   95  230   23  LargePlain "Fundamental Builtin Properties"
-/* [  5] */ CheckBox              10  120  230   23  LargePlain "User Level Builtin Properties"
-/* [  6] */ CheckBox              10  145  230   23  LargePlain "All Properties"
-/* [  7] */ MultiLineEdit         10  180  500  100  LargePlain  VScroll
-/* [  8] */ MultiLineEdit         10  300  500   20  LargePlain  VScroll
-/* [  9] */ Separator			        10  330  500    2
-/* [ 10] */ Button				       145  340   90   23	 LargePlain  "Cancel"
-/* [ 11] */ Button				       245  340   90   23	 LargePlain  "OK"
+/* [  4] */ CheckBox              10   70  500   23  LargePlain "User Defined Properties"
+/* [  5] */ CheckBox              10   95  500   23  LargePlain "Fundamental Builtin Properties"
+/* [  6] */ CheckBox              10  120  500   23  LargePlain "User Level Builtin Properties"
+/* [  7] */ CheckBox              10  145  500   23  LargePlain "All Properties"
+/* [  8] */ LeftText              10  180   90   23  LargePlain "Element Types"
+/* [  9] */ MultiLineEdit        100  180  410  100  LargePlain  VScroll
+/* [ 10] */ CheckBox              10  295   90   23  LargePlain "File Path"
+/* [ 11] */ MultiLineEdit        100  295  410   20  LargePlain  VScroll
+/* [ 12] */ CheckBox              10  330   90   23  LargePlain "Url"
+/* [ 13] */ MultiLineEdit        100  330  410   20  LargePlain  VScroll
+/* [ 14] */ Separator			        10  370  500    2
+/* [ 15] */ Button				       165  380   90   23	 LargePlain  "Cancel"
+/* [ 16] */ Button				       265  380   90   23	 LargePlain  "OK"
 }
 
 'DLGH' ID_ADDON_DLG DLG_Example {
 1   ""    CheckBox_1
 2   ""    CheckBox_2
 3   ""    Separator_0
-3   ""    CheckBox_3
-4   ""    CheckBox_4
-5   ""    CheckBox_5
-6   ""    CheckBox_6
-7   ""    MultiLineEdit_0
-8   ""    MultiLineEdit_1
-9	  ""		Separator_1
-10	""		Button_0
-11	""		Button_1
+4   ""    CheckBox_3
+5   ""    CheckBox_4
+6   ""    CheckBox_5
+7   ""    CheckBox_6
+8   ""    LeftText_0
+9   ""    MultiLineEdit_0
+10  ""    CheckBox_7
+11  ""    MultiLineEdit_1
+12  ""    CheckBox_8
+13  ""    MultiLineEdit_2
+14  ""		Separator_1
+15	""		Button_0
+16	""		Button_1
 }

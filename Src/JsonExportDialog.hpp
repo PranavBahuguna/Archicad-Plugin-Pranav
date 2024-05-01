@@ -6,6 +6,9 @@
 
 struct JsonExportSettingsData {
   GS::UniString filePath;
+  GS::UniString linkPath;
+  bool exportToFile;
+  bool exportToLink;
   GS::Array<API_PropertyDefinitionFilter> propertyDefinitionFilters;
   GS::Array<GS::UniString> elemTypeNames;
   bool selectedOnly;
@@ -29,11 +32,15 @@ public:
     FundamentalCheckboxId = 5,
     UserLevelCheckboxId = 6,
     AllPropertyCheckboxId = 7,
-    ElementTypesTextEditId = 8,
-    FilePathTextEditId = 9,
-    Separator2_Id = 10,
-    CancelButtonId = 11,
-    OKButtonId = 12,
+    ElementTypesLabelId = 8,
+    ElementTypesTextEditId = 9,
+    FilePathCheckboxId = 10,
+    FilePathTextEditId = 11,
+    UrlCheckboxId = 12,
+    UrlTextEditId = 13,
+    Separator2_Id = 14,
+    CancelButtonId = 15,
+    OKButtonId = 16
   };
 
   JsonExportDialog();
@@ -57,8 +64,12 @@ private:
   DG::CheckBox m_fundamentalCheckbox;
   DG::CheckBox m_userLevelCheckbox;
   DG::CheckBox m_allPropertyCheckbox;
+  DG::LeftText m_elementTypesLabel;
   DG::MultiLineEdit m_elementTypesTextEdit;
+  DG::CheckBox m_filePathCheckBox;
   DG::MultiLineEdit m_filePathTextEdit;
+  DG::CheckBox m_urlCheckBox;
+  DG::MultiLineEdit m_urlTextEdit;
   DG::Separator	m_separator2;
   DG::Button m_okButton;
   DG::Button m_cancelButton;

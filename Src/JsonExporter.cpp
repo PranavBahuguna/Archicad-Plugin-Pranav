@@ -1,5 +1,9 @@
 #include "JsonExporter.hpp"
 
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "httplib.h"
+
+#include <iostream>
 #include <fstream>
 
 /**
@@ -22,20 +26,45 @@ void JsonExporter::Parse(const GS::Array<ElementData>& elemDataList, const Eleme
  * @brief Writes a json structure to file. Constructs a new file if one does not already exist and will
  * overwrite existing ones.
  * @param[in] exportJson The json to write to file
- * @param[in] filepath The path of the file to write to
+ * @param[in] filePath The path of the file to write to
  * @param[in] width The indent width for json elements
  * @returns True if file could be sucessfully opened
  */
-bool JsonExporter::ExportToFile(const json& exportJson, const std::string& filepath, size_t width)
+bool JsonExporter::ExportToFile(const json& exportJson, const std::string& filePath, int width)
 {
   // Open a file
-  std::ofstream outFile(filepath, std::ofstream::trunc);
+  std::ofstream outFile(filePath, std::ofstream::trunc);
   if (!outFile.is_open())
     return false;
 
   // Write json with given width
   outFile << std::setw(width) << exportJson << std::endl;
   outFile.close();
+  return true;
+}
+
+/**
+ * @brief Writes a json structure to a http link
+ * @param[in] exportJson The json to write to file
+ * @param[in] linkPath The link to send a POST message to
+ * @param[in] width The indent width for json elements
+ * @returns True if file could be sucessfully opened
+ */
+bool JsonExporter::ExportToLink(const json& exportJson, const std::string& linkPath, int width)
+{
+  httplib::Client cli(linkPath);
+  httplib::Result result = cli.Post("/post", exportJson.dump(width), "application/json");
+
+  if (result->status != httplib::StatusCode::OK_200)
+  {
+    //std::cout << "HTTP error:" << httplib::to_string(result.error()) << std::endl;
+    return false;
+  }
+  else
+  {
+    //std::cout << result->body << std::endl;
+  }
+
   return true;
 }
 

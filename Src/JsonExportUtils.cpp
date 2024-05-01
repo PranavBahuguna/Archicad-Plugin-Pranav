@@ -42,7 +42,7 @@ void JsonExportUtils::GetAvailableElementTypeNames(bool selectionOnly, GS::Array
   }
 }
 
-/** 
+/**
  * @brief Determines if a selection of elements has been made in the application
  * @returns True if any selected elements could be found
  */
@@ -56,9 +56,6 @@ bool JsonExportUtils::IsAnyElementsSelected()
 
 void JsonExportUtils::StartExport(const JsonExportSettingsData& data)
 {
-  // Obtain export file path
-  std::string filePath = data.filePath.ToCStr();
-
   // Obtain all element types and guids
   GS::Array<API_ElemTypeID> elemTypes;
   GetElementTypesFromNames(data.elemTypeNames, elemTypes);
@@ -76,10 +73,20 @@ void JsonExportUtils::StartExport(const JsonExportSettingsData& data)
   ElementTypePropertiesMap elemTypePropertiesMap;
   BuildElementTypePropertiesMap(elemTypes, data.propertyDefinitionFilters, elemTypePropertiesMap);
 
-  // Parse data and export json to file
+  // Parse data and export json
   json resultJson;
   JsonExporter::Parse(elemData, elemTypePropertiesMap, resultJson);
-  JsonExporter::ExportToFile(resultJson, filePath);
+
+  if (data.exportToFile)
+  {
+    std::string filePath = data.filePath.ToCStr();
+    JsonExporter::ExportToFile(resultJson, filePath);
+  }
+  if (data.exportToLink)
+  {
+    std::string linkPath = data.linkPath.ToCStr();
+    JsonExporter::ExportToLink(resultJson, linkPath);
+  }
 }
 
 void JsonExportUtils::BuildElementData(const GS::Array<API_Guid>& elemGuids, GS::Array<ElementData>& data)

@@ -10,8 +10,12 @@ JsonExportDialog::JsonExportDialog() :
   m_fundamentalCheckbox(GetReference(), FundamentalCheckboxId),
   m_userLevelCheckbox(GetReference(), UserLevelCheckboxId),
   m_allPropertyCheckbox(GetReference(), AllPropertyCheckboxId),
+  m_elementTypesLabel(GetReference(), ElementTypesLabelId),
   m_elementTypesTextEdit(GetReference(), ElementTypesTextEditId),
+  m_filePathCheckBox(GetReference(), FilePathCheckboxId),
   m_filePathTextEdit(GetReference(), FilePathTextEditId),
+  m_urlCheckBox(GetReference(), UrlCheckboxId),
+  m_urlTextEdit(GetReference(), UrlTextEditId),
   m_separator2(GetReference(), Separator2_Id),
   m_cancelButton(GetReference(), CancelButtonId),
   m_okButton(GetReference(), OKButtonId)
@@ -38,12 +42,15 @@ JsonExportDialog::~JsonExportDialog()
 JsonExportSettingsData JsonExportDialog::GetSettingsData() const
 {
   auto elementNames = m_elementTypesTextEdit.GetText().Split(",");
-  for (GS::UniString &name : elementNames)
+  for (GS::UniString& name : elementNames)
     name.Trim();
 
   return JsonExportSettingsData
   {
     m_filePathTextEdit.GetText(),
+    m_urlTextEdit.GetText(),
+    m_filePathCheckBox.IsChecked(),
+    m_urlCheckBox.IsChecked(),
     GetPropertyDefinitionFilters(),
     elementNames,
     m_useSelectionElementsCheckbox.IsChecked()
@@ -74,8 +81,9 @@ void JsonExportDialog::InitDialog()
   m_userLevelCheckbox.Disable();
   m_allPropertyCheckbox.Check();
 
-  // Init text edits
-  m_filePathTextEdit.SetText("Enter file path...");
+  // Init file path / link export options
+  m_filePathCheckBox.Check();
+  m_urlTextEdit.Disable();
 }
 
 void JsonExportDialog::ButtonClicked(const DG::ButtonClickEvent& ev)
@@ -127,6 +135,27 @@ void JsonExportDialog::CheckItemChanged(const DG::CheckItemChangeEvent& ev)
       m_userLevelCheckbox.Enable();
     }
   }
+
+  // Handle file path / link checkboxes
+  if (ev.GetSource() == &m_filePathCheckBox)
+  {
+    if (m_filePathCheckBox.IsChecked())
+      m_filePathTextEdit.Enable();
+    else
+      m_filePathTextEdit.Disable();
+  }
+  if (ev.GetSource() == &m_urlCheckBox)
+  {
+    if (m_urlCheckBox.IsChecked())
+      m_urlTextEdit.Enable();
+    else
+      m_urlTextEdit.Disable();
+  }
+
+  if (m_filePathCheckBox.IsChecked() || m_urlCheckBox.IsChecked())
+    m_okButton.Enable();
+  else
+    m_okButton.Disable();
 }
 
 void JsonExportDialog::UpdateAvailableElementTypes()
