@@ -93,4 +93,6 @@ Layer Name {
 - Certain element types such as 'Object' fail to get data collected for them where it exists. Although the Archicad API can obtain the property
   definitions for that type just fine, it produces an error when attempting to obtain values for those definitions. Its not possible to determine
   which properties have this issue short of checking every single one for each type so I opted not to fix this. This might happen with other types,
-  but I have not tested every single one to determine if this happens to any others.
+  but I have not tested every one to determine if this happens to any others.
+- File writing / url upload isn't done concurrently, so this blocks the application until complete. I would have preferred to make this asynchronous
+  but chose to limit the scope of the project not to include this for now. 
